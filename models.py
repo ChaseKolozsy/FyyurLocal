@@ -18,7 +18,6 @@ app.config.from_object('config')
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-# TODO: connect to a local postgresql database
 
 #----------------------------------------------------------------------------#
 # Models.
@@ -48,9 +47,6 @@ class Venue(db.Model):
     date_listed = db.Column(db.TIMESTAMP(timezone=False))
 
 
-
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
-
 class Artist(db.Model):
     __tablename__ = 'Artist'
 
@@ -69,9 +65,4 @@ class Artist(db.Model):
     date_listed = db.Column(db.TIMESTAMP(timezone=False))
     availability = db.Column(db.String(500))
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
-
-
-
-# TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
 
