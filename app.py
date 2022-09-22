@@ -1,7 +1,14 @@
 #----------------------------------------------------------------------------#
 # Priority Queue
 #----------------------------------------------------------------------------#
+#9-22-2022
 #TODO Use FlaskForm to validate all fields esp seeking_talent
+#TODO add nullable=False to relevant fields
+#TODO add case insensite code, or format cities and addresses to use proper 
+#     capitalization
+#TODO reinstantiate models.py
+
+#9-23-2022
 #TODO complete app.route('/Venues')
 
 #----------------------------------------------------------------------------#

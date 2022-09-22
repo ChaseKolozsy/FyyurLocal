@@ -49,6 +49,7 @@ class Venue(db.Model):
     seeking_talent = db.Column(db.Boolean)
     seeking_description = db.Column(db.String(120))
     date_listed = db.Column(db.TIMESTAMP(timezone=False), server_default=func.now())
+    dates_booked = db.Column(db.String(500))
 
     def set_name(self, name):
         self.name = name
@@ -144,7 +145,7 @@ class Artist(db.Model):
     seeking_venue = db.Column(db.Boolean)
     seeking_description = db.Column(db.String(120))
     date_listed = db.Column(db.TIMESTAMP(timezone=False), server_default=func.now())
-    availability = db.Column(db.String(500))
+    dates_booked = db.Column(db.String(500))
 
     def set_name(self, name):
         self.name = name
@@ -176,8 +177,8 @@ class Artist(db.Model):
     def set_seeking_description(self, seeking_description):
         self.seeking_description = seeking_description 
 
-    def set_availability(self, availability):
-        self.availability = availability 
+   # def set_availability(self, availability):
+   #     self.availability = availability 
 
     def insert(self):
         db.session.add(self)
