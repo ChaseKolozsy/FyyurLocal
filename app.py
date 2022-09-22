@@ -1,7 +1,14 @@
 #----------------------------------------------------------------------------#
+# Priority Queue
+#----------------------------------------------------------------------------#
+#TODO Use FlaskForm to validate all fields esp seeking_talent
+#TODO complete app.route('/Venues')
+
+#----------------------------------------------------------------------------#
 # Imports
 #----------------------------------------------------------------------------#
 
+from flask import abort, jsonify
 import json
 import dateutil.parser
 import babel
@@ -9,8 +16,137 @@ import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
-from models import *
+import sys
 
+
+
+from flask import Flask, render_template, request, Response, flash, redirect, url_for
+from flask_moment import Moment
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from datetime import datetime
+from sqlalchemy.sql import func
+#from sqlalchemy import Enum
+#from enums import *
+
+#----------------------------------------------------------------------------#
+# App Config.
+#----------------------------------------------------------------------------#
+
+app = Flask('app')
+moment = Moment(app)
+app.config.from_object('config')
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+
+
+#----------------------------------------------------------------------------#
+# Models.
+#----------------------------------------------------------------------------#
+
+shows = db.Table('Show',
+    db.Column('venue_id', db.Integer, db.ForeignKey('Venue.id'), primary_key=True),
+    db.Column('artist_id', db.Integer, db.ForeignKey('Artist.id'), primary_key=True),
+    db.Column('start_time', db.DateTime(timezone=False))
+)
+
+class Venue(db.Model):
+    __tablename__ = 'Venue'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    city = db.Column(db.String(120))
+    state = db.Column(db.String(120))
+    address = db.Column(db.String(120))
+    phone = db.Column(db.String(120))
+    image_link = db.Column(db.String(500))
+    facebook_link = db.Column(db.String(120))
+    #genres = db.Column('genres', Enum(GenreEnum)) 
+    genres = db.Column(db.String(120)) 
+    website_link = db.Column(db.String(120))
+    seeking_talent = db.Column(db.Boolean)
+    seeking_description = db.Column(db.String(120))
+    date_listed = db.Column(db.TIMESTAMP(timezone=False), server_default=func.now())
+
+    def __init__(self, name, city, state, address, phone, image_link, facebook_link, genres, website_link, seeking_talent, seeking_description):
+        self.name = name
+        self.city = city
+        self.state = state
+        self.address = address
+        self.phone = phone
+        self.image_link = image_link
+        self.facebook_link = facebook_link
+        self.genres = genres
+        self.website_link = website_link
+        self.seeking_talent = seeking_talent
+        self.seeking_description = seeking_description
+
+    #def format_venue(self):
+    #    data = []
+    #    city_and_state = Venue.query.filter_by(state
+    #    return [{
+    #              "city": self.city,
+    #              "state": self.state,
+    #              "venues": [{
+    #                "id": 1,
+    #                "name": "The Musical Hop",
+    #                "num_upcoming_shows": 0,
+    #              }, {
+    #                "id": 3,
+    #                "name": "Park Square Live Music & Coffee",
+    #                "num_upcoming_shows": 1,
+    #              }]
+
+
+    def view(self):
+        #print("id" + ": " + self.id)
+        print("name" + ": " +  self.name)
+        print("city" + ": " +  self.city)
+        print("state" + ": " +  self.state)
+        print("address" + ": " +  self.address)
+        print("phone" + ": " +  self.phone)
+        print("image" + ": " +  self.image_link)
+        print("facebook" + ": " +  self.facebook_link)
+        print("genres" + ": " +  self.genres,)
+        print("website" + ": " +  self.website_link)
+        print("seeking_talent" + ": " +  str(self.seeking_talent))
+        print("seeking_description" + ": " +  self.seeking_description)
+        #print("date_listed" + ": " +  self.date_listed)
+
+
+class Artist(db.Model):
+    __tablename__ = 'Artist'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    city = db.Column(db.String(120))
+    state = db.Column(db.String(120))
+    phone = db.Column(db.String(120))
+    #genres = db.Column('genres', Enum(GenreEnum)) 
+    genres = db.Column(db.String(120)) 
+    image_link = db.Column(db.String(500))
+    facebook_link = db.Column(db.String(120))
+    website_link = db.Column(db.String(120))
+    seeking_venue = db.Column(db.Boolean)
+    seeking_description = db.Column(db.String(120))
+    date_listed = db.Column(db.TIMESTAMP(timezone=False), server_default=func.now())
+    availability = db.Column(db.String(500))
+
+
+    def view(self):
+        print("id" + ": " + self.id)
+        print("name" + ": " +  self.name)
+        print("city" + ": " +  self.city)
+        print("state" + ": " +  self.state)
+        print("address" + ": " +  self.address)
+        print("phone" + ": " +  self.phone)
+        print("image" + ": " +  self.image_link)
+        print("facebook" + ": " +  self.facebook_link)
+        print("genres" + ": " +  self.genres,)
+        print("website" + ": " +  self.website_link)
+        print("seeking_talent" + ": " +  self.seeking_talent)
+        print("seeking_description" + ": " +  self.seeking_description)
+        print("date_listed" + ": " +  self.date_liste)
 #----------------------------------------------------------------------------#
 # Filters.
 #----------------------------------------------------------------------------#
@@ -41,6 +177,8 @@ def index():
 def venues():
   # TODO: replace with real venues data.
   #       num_upcoming_shows should be aggregated based on number of upcoming shows per venue.
+  #data = Venue.query.order_by(Venue.id).all()
+
   data=[{
     "city": "San Francisco",
     "state": "CA",
@@ -174,14 +312,42 @@ def create_venue_form():
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
   # TODO: insert form data as a new Venue record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion
+  body = {}
+  error = False
+  genre_list = request.form.getlist('genres', type=None)
+  name = request.form.get('name') 
+  city = request.form.get('city')
+  state = request.form.get('state')
+  address = request.form.get('address')
+  phone = request.form.get('phone')
+  image_link = request.form.get('image_link')
+  genres = ', '.join(genre_list)
+  facebook_link = request.form.get('facebook_link')
+  website_link = request.form.get('website_link')
+  seeking_talent = True if request.form['seeking_talent'] else False
+  seeking_description = request.form.get('seeking_description')
+  new_venue = Venue(name, city, state, address, phone, image_link, facebook_link, genres, website_link, seeking_talent, seeking_description)
+  new_venue.view()
+  print(db.session.query(Venue).all())
+  try:
+    print("adding: ")
+    db.session.add(new_venue)
+    print("added")
+    db.session.commit()
+    print("successful insert")
+  except:        
+    print("exception was thrown")
+    error = True
+    db.session.rollback()
+  finally:
+    db.session.close()           
+    if  error == True:
+      flash('An error occurred. Venue ' + new_venue.name + ' could not be listed.')
+      abort(400)
+    else:            
+      flash('Venue ' + request.form['name'] + ' was successfully listed!')
+      return render_template('pages/home.html')
 
-  # on successful db insert, flash success
-  flash('Venue ' + request.form['name'] + ' was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
-  # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-  return render_template('pages/home.html')
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):

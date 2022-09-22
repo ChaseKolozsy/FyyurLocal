@@ -8,16 +8,16 @@ class GenreEnum(enum.Enum):
     Electronic = 'Electronic'
     Folk = 'Folk'
     Funk = 'Funk'
-    Hip-Hop = 'Hip-Hop'
-    Heavy Metal = 'Heavy Metal'
+    Hip_Hop = 'Hip-Hop'
+    Heavy_Metal = 'Heavy Metal'
     Instrumental = 'Instrumental'
     Jazz = 'Jazz'
-    Musical Theatre = 'Musical Theatre'
+    Musical_Theatre = 'Musical Theatre'
     Pop = 'Pop'
     Punk = 'Punk'
-    R&B = 'R&B'
+    RnB = 'R&B'
     Reggae = 'Reggae'
-    Rock n Roll = 'Rock n Roll'
+    Rock_n_Roll = 'Rock n Roll'
     Soul = 'Soul'
     Other = 'Other'
 
@@ -27,7 +27,10 @@ class GenreEnum(enum.Enum):
         Methods decorated with @classmethod can be called 
         statically without having an instance of the class.
         """
-        return [(choice.name, choice.value) for choice in cls]
+        choices = [(choice.name, choice.value) for choice in cls]
+        #print("Printing choices: ")
+        #print(choices)
+        return choices
 
 class StateEnum(enum.Enum):
     AL = 'AL'

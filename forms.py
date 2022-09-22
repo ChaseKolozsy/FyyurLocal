@@ -12,10 +12,10 @@ def is_valid_phone(number):
     123-456-7890 - dash separator
     123 456 7890 - space separator
     """
-    Patterns:
-    000 = [[0-9]{3}
-    0000 = [0-9]{4}
-    -.  = ?[-. ]
+    # Patterns:
+    #000 = [[0-9]{3}
+    #0000 = [0-9]{4}
+    #-.  = ?[-. ]
     regex = re.compile('^\(?([0-9]{3}\)?[-. ]?([0-9]{3})[-. ]?(0-9]{4})$')
     return regex.match(number)
 
@@ -127,4 +127,3 @@ class ArtistForm(Form):
             return False
         #if pass validation
         return True
-
